@@ -23,6 +23,6 @@ public class AppUser {
     @Column
     private String password;
 
-    @OneToMany(fetch = FetchType.EAGER)
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private Collection<Log> logs = new ArrayList<>();
 }
