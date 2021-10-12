@@ -9,6 +9,12 @@ import com.mouatamid.logsaver.responseModels.LogResponseModel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -19,13 +25,26 @@ import java.util.stream.Collectors;
 @Transactional
 @RequiredArgsConstructor
 @Slf4j
-public class AppUserServiceImpl implements IAppUserService {
+public class AppUserServiceImpl implements IAppUserService, UserDetailsService {
     private final AppUserRepository appUserRepository;
     private final LogRepository logRepository;
     private final ModelMapper modelMapper;
+    private final BCryptPasswordEncoder passwordEncoder;
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        Optional<AppUser> appUserOptional = appUserRepository.findByUsername(username);
+        if (appUserOptional.isEmpty()){
+            throw new UsernameNotFoundException("Username not found with " + username);
+        }
+        AppUser appUser = appUserOptional.get();
+        UserDetails userDetails = new User(appUser.getUsername(),appUser.getPassword(), new ArrayList<SimpleGrantedAuthority>());
+        return userDetails;
+    }
+
     @Override
     public AppUserResponseModel saveUser(String username, String password) {
-        AppUser appUser = new AppUser(null, username, password, new ArrayList<>());
+        AppUser appUser = new AppUser(null, username, passwordEncoder.encode(password), new ArrayList<>());
         AppUser savedUser = appUserRepository.save(appUser);
         log.info("User saved {}", username);
         return modelMapper.map(savedUser, AppUserResponseModel.class);
@@ -55,4 +74,6 @@ public class AppUserServiceImpl implements IAppUserService {
         log.info("Log created {} for user {}", logCreated.getId(), username);
         return modelMapper.map(logCreated, LogResponseModel.class);
     }
+
+
 }

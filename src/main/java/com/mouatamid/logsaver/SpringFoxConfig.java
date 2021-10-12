@@ -1,4 +1,4 @@
-package com.mouatamid.logsaver.configuration;
+package com.mouatamid.logsaver;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
