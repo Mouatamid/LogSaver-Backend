@@ -1,5 +1,6 @@
 package com.mouatamid.logsaver.web;
 
+import com.mouatamid.logsaver.requestModels.CreateUserBody;
 import com.mouatamid.logsaver.responseModels.AppUserResponseModel;
 import com.mouatamid.logsaver.responseModels.LogResponseModel;
 import com.mouatamid.logsaver.services.IAppUserService;
@@ -19,8 +20,8 @@ public class AppUserController {
     private final IAppUserService appUserService;
 
     @PostMapping("/create")
-    ResponseEntity<AppUserResponseModel> createUser(@RequestParam String email, @RequestParam String password){
-        AppUserResponseModel appUserResponseModel = appUserService.saveUser(email,password);
+    ResponseEntity<AppUserResponseModel> createUser(@RequestBody CreateUserBody createUserBody){
+        AppUserResponseModel appUserResponseModel = appUserService.saveUser(createUserBody.getEmail(),createUserBody.getPassword());
         if (appUserResponseModel != null){
             return new ResponseEntity<>(appUserResponseModel, HttpStatus.CREATED);
         }

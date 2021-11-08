@@ -2,6 +2,8 @@ package com.mouatamid.logsaver.security;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mouatamid.logsaver.requestModels.SignInModel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -27,10 +29,15 @@ public class AuthenticationCustomFilter extends UsernamePasswordAuthenticationFi
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
-        String username = request.getParameter("username");
-        String password = request.getParameter("password");
-        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(username, password);
-        return authenticationManager.authenticate(usernamePasswordAuthenticationToken);
+        try {
+            SignInModel signInModel = new ObjectMapper().readValue(request.getInputStream(), SignInModel.class);
+            UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(signInModel.getUsername(), signInModel.getPassword());
+            return authenticationManager.authenticate(usernamePasswordAuthenticationToken);
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new RuntimeException();
+        }
+
 
     }
 
